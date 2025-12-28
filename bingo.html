@@ -2,8 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bingo App </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bingo App</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -13,7 +13,8 @@
             --btn-next-bg: #4CAF50;
             --btn-reset-bg: #f44336;
             --history-bg: #333;
-            --active-num-bg: #6fcaff;
+            /* ユーザー変更色を維持 */
+            --active-num-bg: #6fcaff; 
         }
 
         body {
@@ -27,6 +28,8 @@
             align-items: center;
             overflow: hidden;
             user-select: none;
+            /* スマホでのタッチ操作をスムーズに */
+            touch-action: manipulation;
         }
 
         .container {
@@ -45,6 +48,8 @@
             display: flex;
             flex-direction: column;
             background-color: #222;
+            /* 履歴が多くなっても枠内に収める */
+            min-height: 0; 
         }
 
         .panel-title {
@@ -53,6 +58,7 @@
             text-align: center;
             border-bottom: 1px solid #555;
             padding-bottom: 5px;
+            flex-shrink: 0;
         }
 
         .history-grid {
@@ -61,6 +67,9 @@
             gap: 8px;
             overflow-y: auto;
             padding-right: 5px;
+            /* スクロールバーのデザイン調整 */
+            scrollbar-width: thin;
+            scrollbar-color: #555 #222;
         }
 
         .history-item {
@@ -84,6 +93,7 @@
         }
         
         .history-item.special-hit {
+            /* ユーザー変更色を維持 */
             background-color: #f5b1ee;
             box-shadow: 0 0 15px #ff4081;
             animation: glow 1s infinite alternate;
@@ -94,6 +104,7 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            min-height: 0;
         }
 
         .current-number-box {
@@ -106,6 +117,7 @@
             align-items: center;
             background-color: #222;
             position: relative;
+            min-height: 0; /* フレックスボックスでの縮小を許可 */
         }
 
         #current-number-display {
@@ -125,6 +137,7 @@
             display: none;
             margin-top: 10px;
             font-size: 1.5rem;
+            /* ユーザー変更色を維持 */
             color: #f54fdc;
             animation: pulse 0.5s infinite;
         }
@@ -135,6 +148,7 @@
             gap: 20px;
             justify-content: center;
             align-items: flex-start;
+            min-height: 0;
         }
 
         button {
@@ -147,6 +161,8 @@
             font-weight: bold;
             transition: transform 0.1s;
             width: 100%;
+            /* スマホでのタップ遅延防止 */
+            touch-action: manipulation;
         }
 
         button:active {
@@ -180,274 +196,30 @@
             to { box-shadow: 0 0 20px #ffeb3b; }
         }
 
-        @media (max-width: 768px) {
+        /* -------------------------------------- */
+        /* レスポンシブ調整（ここを変更しました） */
+        /* -------------------------------------- */
+
+        /* スマホ縦画面（Portrait）のときだけ縦並びにする */
+        @media (max-width: 768px) and (orientation: portrait) {
             .container { flex-direction: column-reverse; }
             .history-grid { grid-template-columns: repeat(10, 1fr); }
             #current-number-display { font-size: 8rem; }
         }
-    </style>
-</head>
-<body>
 
-    <div class="container">
-        <div class="left-panel">
-            <div class="panel-title">これまでにでた数字</div>
-            <div class="history-grid" id="history-grid"></div>
-        </div>
-
-        <div class="right-panel">
-            <div class="current-number-box">
-                <div class="panel-title" style="border:none; margin-top:20px;">今回の数字</div>
-                <div id="current-number-display">-</div>
-                <div id="special-msg" class="special-badge">★ SPECIAL! ★</div>
-            </div>
-
-            <div class="controls">
-                <button id="next-btn">next</button>
-                <button id="reset-btn">reset</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const MAX_NUMBER = 75;
-        const SPECIAL_COUNT = 3;
-        const SHUFFLE_DURATION = 3000; 
-
-        let availableNumbers = [];
-        let drawnNumbers = [];
-        let specialNumbers = [];
-        let isShuffling = false;
-        let audioCtx = null;
-
-        const displayEl = document.getElementById('current-number-display');
-        const historyGridEl = document.getElementById('history-grid');
-        const nextBtn = document.getElementById('next-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const specialMsgEl = document.getElementById('special-msg');
-
-        function getAudioContext() {
-            if (!audioCtx) {
-                try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    if (AudioContext) audioCtx = new AudioContext();
-                } catch (e) {
-                    console.error("Web Audio API not supported", e);
-                }
+        /* スマホ横画面（Landscape）のときの調整 */
+        /* 左右配置を維持しつつ、高さが狭いので文字サイズなどを小さくして収める */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .container {
+                width: 98%;   /* 横幅を有効活用 */
+                height: 95%;  /* 高さもギリギリまで使う */
+                gap: 10px;    /* 間隔を詰める */
             }
-            return audioCtx;
-        }
-
-        // 通常のドラムロール音
-        function playDrumRollSafe() {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            try {
-                if (ctx.state === 'suspended') ctx.resume();
-                const bufferSize = ctx.sampleRate * 3;
-                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = (Math.random() * 2 - 1) * 0.5;
-                }
-                const noise = ctx.createBufferSource();
-                noise.buffer = buffer;
-                const filter = ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.value = 800;
-                noise.connect(filter);
-                filter.connect(ctx.destination);
-                noise.start();
-                noise.stop(ctx.currentTime + 3);
-            } catch (e) {}
-        }
-
-        // 通常の決定音
-        function playFinishSoundSafe() {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            try {
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.3, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.5);
-            } catch (e) {}
-        }
-
-        // ★スペシャル歓声サウンド（わー！＋ファンファーレ）
-        function playCheerSound() {
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            try {
-                // 1. 拍手・歓声のようなノイズ
-                const bufferSize = ctx.sampleRate * 2.5;
-                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-                const data = buffer.getChannelData(0);
-                // ピンクノイズ風に生成
-                for (let i = 0; i < bufferSize; i++) {
-                     data[i] = (Math.random() * 2 - 1) * 0.8;
-                }
-                const noise = ctx.createBufferSource();
-                noise.buffer = buffer;
-                const noiseFilter = ctx.createBiquadFilter();
-                noiseFilter.type = 'lowpass';
-                noiseFilter.frequency.value = 1200; // 人の声っぽく
-                const noiseGain = ctx.createGain();
-                noiseGain.gain.setValueAtTime(0.5, ctx.currentTime);
-                noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.5);
-                
-                noise.connect(noiseFilter);
-                noiseFilter.connect(noiseGain);
-                noiseGain.connect(ctx.destination);
-                noise.start();
-
-                // 2. 祝福のファンファーレ（ド・ミ・ソ・ド！）
-                const notes = [523.25, 659.25, 783.99, 1046.50]; // C Major
-                const timings = [0, 0.1, 0.2, 0.4]; // 鳴らすタイミング
-                
-                notes.forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'triangle'; // 柔らかい音
-                    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                    
-                    gain.gain.setValueAtTime(0.2, ctx.currentTime + timings[i]);
-                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + timings[i] + 1.5);
-                    
-                    osc.connect(gain);
-                    gain.connect(ctx.destination);
-                    osc.start(ctx.currentTime + timings[i]);
-                    osc.stop(ctx.currentTime + timings[i] + 2.0);
-                });
-
-            } catch(e) { console.error(e); }
-        }
-
-        function initApp() {
-            availableNumbers = Array.from({length: MAX_NUMBER}, (_, i) => i + 1);
-            drawnNumbers = [];
-            specialNumbers = [];
-            isShuffling = false;
-            
-            let tempArray = [...availableNumbers];
-            for (let i = 0; i < SPECIAL_COUNT; i++) {
-                const randomIndex = Math.floor(Math.random() * tempArray.length);
-                specialNumbers.push(tempArray[randomIndex]);
-                tempArray.splice(randomIndex, 1);
+            .left-panel, .right-panel {
+                padding: 10px; /* パディングを減らす */
             }
-            console.log("Secret Specials:", specialNumbers);
-
-            displayEl.textContent = "-";
-            displayEl.style.color = "var(--accent-color)";
-            displayEl.classList.remove('shuffling');
-            specialMsgEl.style.display = "none";
-            nextBtn.disabled = false;
-            
-            renderHistoryGrid();
-        }
-
-        function renderHistoryGrid() {
-            historyGridEl.innerHTML = '';
-            for (let i = 1; i <= MAX_NUMBER; i++) {
-                const div = document.createElement('div');
-                div.classList.add('history-item');
-                div.textContent = i;
-                div.id = `num-${i}`;
-                if (drawnNumbers.includes(i)) {
-                    div.classList.add('hit');
-                    if (specialNumbers.includes(i)) div.classList.add('special-hit');
-                }
-                historyGridEl.appendChild(div);
+            .panel-title {
+                font-size: 1rem;
+                margin-bottom: 5px;
             }
-        }
-
-        function startLottery() {
-            if (isShuffling || availableNumbers.length === 0) {
-                if(availableNumbers.length === 0) alert("終了です！");
-                return;
-            }
-
-            isShuffling = true;
-            nextBtn.disabled = true;
-            displayEl.classList.add('shuffling');
-
-            try { playDrumRollSafe(); } catch(e){}
-
-            const intervalId = setInterval(() => {
-                const randomNum = Math.floor(Math.random() * MAX_NUMBER) + 1;
-                displayEl.textContent = randomNum;
-            }, 60);
-
-            setTimeout(() => {
-                clearInterval(intervalId);
-                finalizeNumber();
-            }, SHUFFLE_DURATION);
-        }
-
-        function finalizeNumber() {
-            const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-            const pickedNumber = availableNumbers[randomIndex];
-            availableNumbers.splice(randomIndex, 1);
-
-            drawnNumbers.push(pickedNumber);
-            displayEl.textContent = pickedNumber;
-            displayEl.classList.remove('shuffling');
-
-            const historyItem = document.getElementById(`num-${pickedNumber}`);
-            if(historyItem) historyItem.classList.add('hit');
-
-            if (specialNumbers.includes(pickedNumber)) {
-                // スペシャルの場合
-                triggerSpecialEffect(historyItem);
-            } else {
-                // 通常の場合
-                try { playFinishSoundSafe(); } catch(e){}
-                specialMsgEl.style.display = "none";
-                displayEl.style.color = "var(--accent-color)";
-            }
-
-            isShuffling = false;
-            if (availableNumbers.length > 0) nextBtn.disabled = false;
-        }
-
-        function triggerSpecialEffect(historyItem) {
-            displayEl.style.color = "#e91e63";
-            specialMsgEl.style.display = "block";
-            if(historyItem) historyItem.classList.add('special-hit');
-
-            // 歓声サウンド再生！
-            playCheerSound();
-            
-            // クラッカー（紙吹雪）を派手に
-            const count = 200;
-            const defaults = { origin: { y: 0.7 } };
-
-            function fire(particleRatio, opts) {
-                confetti(Object.assign({}, defaults, opts, {
-                    particleCount: Math.floor(count * particleRatio)
-                }));
-            }
-
-            fire(0.25, { spread: 26, startVelocity: 55, });
-            fire(0.2, { spread: 60, });
-            fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-            fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-            fire(0.1, { spread: 120, startVelocity: 45, });
-        }
-
-        nextBtn.addEventListener('click', startLottery);
-        resetBtn.addEventListener('click', () => {
-            if(confirm('リセットしますか？')) initApp();
-        });
-
-        initApp();
-    </script>
-</body>
-</html>
+            /* 履歴パネルの調整 */
