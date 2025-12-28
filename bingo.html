@@ -13,7 +13,7 @@
             --btn-next-bg: #4CAF50;
             --btn-reset-bg: #f44336;
             --history-bg: #333;
-            /* ユーザー変更色を維持 */
+            /* ユーザー設定色を維持 */
             --active-num-bg: #6fcaff; 
         }
 
@@ -28,33 +28,31 @@
             align-items: center;
             overflow: hidden;
             user-select: none;
-            /* スマホでのタッチ操作をスムーズに */
             touch-action: manipulation;
         }
 
         .container {
             display: flex;
-            width: 90%;
-            height: 90%;
-            gap: 20px;
+            width: 95%; /* 横幅を少し広げました */
+            height: 95%; /* 高さも広げました */
+            gap: 15px;
             max-width: 1200px;
         }
 
         .left-panel {
-            flex: 1;
+            flex: 1.2; /* 履歴スペースを少し広めに確保 */
             border: 2px solid #555;
             border-radius: 10px;
-            padding: 20px;
+            padding: 10px; /* 余白を少し削減 */
             display: flex;
             flex-direction: column;
             background-color: #222;
-            /* 履歴が多くなっても枠内に収める */
             min-height: 0; 
         }
 
         .panel-title {
-            font-size: 1.2rem;
-            margin-bottom: 10px;
+            font-size: 1rem;
+            margin-bottom: 5px;
             text-align: center;
             border-bottom: 1px solid #555;
             padding-bottom: 5px;
@@ -63,13 +61,14 @@
 
         .history-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
+            /* 変更：横に15個並べる */
+            grid-template-columns: repeat(15, 1fr);
+            gap: 4px; /* 丸同士の間隔を狭く */
             overflow-y: auto;
-            padding-right: 5px;
-            /* スクロールバーのデザイン調整 */
+            padding-right: 2px;
             scrollbar-width: thin;
             scrollbar-color: #555 #222;
+            align-content: start; /* 上詰めにする */
         }
 
         .history-item {
@@ -81,7 +80,10 @@
             background-color: var(--history-bg);
             color: #777;
             font-weight: bold;
-            font-size: 0.9rem;
+            /* 変更：丸に対して文字を大きく */
+            font-size: clamp(0.6rem, 1.2vw, 1rem); 
+            line-height: 1;
+            padding: 0;
             transition: all 0.3s;
         }
 
@@ -89,26 +91,28 @@
             background-color: var(--active-num-bg);
             color: white;
             transform: scale(1.1);
-            border: 2px solid #fff;
+            border: 1px solid #fff; /* ボーダーを少し細く */
+            z-index: 1; /* 光った数字が他より前に出るように */
         }
         
         .history-item.special-hit {
-            /* ユーザー変更色を維持 */
             background-color: #f5b1ee;
-            box-shadow: 0 0 15px #ff4081;
+            box-shadow: 0 0 10px #ff4081;
             animation: glow 1s infinite alternate;
+            z-index: 2;
         }
 
         .right-panel {
-            flex: 1;
+            flex: 0.8; /* 右側の比率を少し下げる */
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 10px; /* 変更：パネル内の間隔を詰めてボタンを上げる */
             min-height: 0;
         }
 
         .current-number-box {
-            flex: 2;
+            /* 変更：縦幅を短くする調整 */
+            flex: 1.2; /* 以前は2だったのを減らす */
             border: 2px solid #555;
             border-radius: 10px;
             display: flex;
@@ -117,11 +121,13 @@
             align-items: center;
             background-color: #222;
             position: relative;
-            min-height: 0; /* フレックスボックスでの縮小を許可 */
+            min-height: 0;
+            padding: 10px;
         }
 
         #current-number-display {
-            font-size: 12rem;
+            /* 枠に合わせて自動で縮小しつつ、基本は大きく */
+            font-size: 15vh; 
             font-weight: bold;
             color: var(--accent-color);
             line-height: 1;
@@ -135,9 +141,8 @@
 
         .special-badge {
             display: none;
-            margin-top: 10px;
-            font-size: 1.5rem;
-            /* ユーザー変更色を維持 */
+            margin-top: 5px;
+            font-size: 1.2rem;
             color: #f54fdc;
             animation: pulse 0.5s infinite;
         }
@@ -145,15 +150,15 @@
         .controls {
             flex: 1;
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
-            align-items: flex-start;
+            align-items: flex-start; /* 上寄せにする */
             min-height: 0;
         }
 
         button {
             font-size: 1.5rem;
-            padding: 15px 40px;
+            padding: 15px 0; /* 横幅いっぱいに */
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -161,7 +166,6 @@
             font-weight: bold;
             transition: transform 0.1s;
             width: 100%;
-            /* スマホでのタップ遅延防止 */
             touch-action: manipulation;
         }
 
@@ -197,58 +201,67 @@
         }
 
         /* -------------------------------------- */
-        /* レスポンシブ調整（ここを変更しました） */
+        /* レスポンシブ調整 */
         /* -------------------------------------- */
 
-        /* スマホ縦画面（Portrait）のときだけ縦並びにする */
+        /* スマホ縦画面 */
         @media (max-width: 768px) and (orientation: portrait) {
             .container { flex-direction: column-reverse; }
-            .history-grid { grid-template-columns: repeat(10, 1fr); }
+            /* 縦画面だと15個は厳しすぎるため、ここだけ10個に落とすか、15個のまま極小にするか */
+            /* ご要望通り15個を維持しますが、かなり小さくなります */
+            .history-grid { grid-template-columns: repeat(10, 1fr); } 
             #current-number-display { font-size: 8rem; }
         }
 
-        /* スマホ横画面（Landscape）のときの調整 */
-        /* 左右配置を維持しつつ、高さが狭いので文字サイズなどを小さくして収める */
+        /* スマホ横画面（メインのご利用シーン） */
         @media (max-height: 600px) and (orientation: landscape) {
             .container {
-                width: 98%;   /* 横幅を有効活用 */
-                height: 95%;  /* 高さもギリギリまで使う */
-                gap: 10px;    /* 間隔を詰める */
+                width: 98%;
+                height: 96%;
+                gap: 10px;
             }
             .left-panel, .right-panel {
-                padding: 10px; /* パディングを減らす */
-            }
-            .panel-title {
-                font-size: 1rem;
-                margin-bottom: 5px;
-            }
-            /* 履歴パネルの調整 */
-            .history-grid {
-                gap: 4px;
-            }
-            .history-item {
-                font-size: 0.7rem; /* 数字を小さく */
+                padding: 5px;
             }
             
-            /* メイン数字の調整：画面高さに合わせて自動調整（35vh = 画面高さの35%） */
+            /* 履歴：15個並び */
+            .history-grid {
+                grid-template-columns: repeat(15, 1fr);
+                gap: 3px;
+            }
+            /* 丸の中の文字を相対的に大きく */
+            .history-item {
+                font-size: 0.75rem; 
+            }
+
+            /* 右パネルのバランス調整 */
+            .right-panel {
+                gap: 8px; /* パネル間隔を詰める */
+            }
+
+            /* 今回の数字枠を短く */
+            .current-number-box {
+                flex: 1; /* 比率を下げる */
+                padding: 5px;
+            }
             #current-number-display {
-                font-size: 35vh; 
+                font-size: 25vh; /* 画面高さに合わせて調整 */
             }
             
             .special-badge {
-                font-size: 1.2rem;
-                margin-top: 5px;
+                font-size: 1rem;
+                margin-top: 2px;
             }
 
-            /* ボタン周りの調整 */
+            /* ボタンを上に繰り上げ */
             .controls {
+                flex: 0.8; /* ボタンエリアの比率確保 */
                 gap: 10px;
-                align-items: center; /* 中央揃えに */
+                align-items: flex-start; /* 上に詰める */
             }
             button {
-                font-size: 1.2rem;
-                padding: 10px 15px; /* ボタンをスリムに */
-                height: auto;
+                font-size: 1.1rem;
+                padding: 10px 0;
             }
         }
     </style>
@@ -263,7 +276,7 @@
 
         <div class="right-panel">
             <div class="current-number-box">
-                <div class="panel-title" style="border:none; margin-top:10px;">今回の数字</div>
+                <div class="panel-title" style="border:none; margin-top:5px;">今回の数字</div>
                 <div id="current-number-display">-</div>
                 <div id="special-msg" class="special-badge">★ SPECIAL! ★</div>
             </div>
@@ -304,7 +317,6 @@
             return audioCtx;
         }
 
-        // 通常のドラムロール音
         function playDrumRollSafe() {
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -328,7 +340,6 @@
             } catch (e) {}
         }
 
-        // 通常の決定音
         function playFinishSoundSafe() {
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -347,12 +358,10 @@
             } catch (e) {}
         }
 
-        // ★スペシャル歓声サウンド
         function playCheerSound() {
             const ctx = getAudioContext();
             if (!ctx) return;
             try {
-                // 1. 拍手・歓声
                 const bufferSize = ctx.sampleRate * 2.5;
                 const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -367,31 +376,25 @@
                 const noiseGain = ctx.createGain();
                 noiseGain.gain.setValueAtTime(0.5, ctx.currentTime);
                 noiseGain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2.5);
-                
                 noise.connect(noiseFilter);
                 noiseFilter.connect(noiseGain);
                 noiseGain.connect(ctx.destination);
                 noise.start();
 
-                // 2. ファンファーレ
                 const notes = [523.25, 659.25, 783.99, 1046.50];
                 const timings = [0, 0.1, 0.2, 0.4];
-                
                 notes.forEach((freq, i) => {
                     const osc = ctx.createOscillator();
                     const gain = ctx.createGain();
                     osc.type = 'triangle';
                     osc.frequency.setValueAtTime(freq, ctx.currentTime);
-                    
                     gain.gain.setValueAtTime(0.2, ctx.currentTime + timings[i]);
                     gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + timings[i] + 1.5);
-                    
                     osc.connect(gain);
                     gain.connect(ctx.destination);
                     osc.start(ctx.currentTime + timings[i]);
                     osc.stop(ctx.currentTime + timings[i] + 2.0);
                 });
-
             } catch(e) { console.error(e); }
         }
 
