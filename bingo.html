@@ -21,34 +21,38 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            /* 1画面に収めるためスクロールを無効化 */
-            height: 100vh;
-            overflow: hidden; 
+            /* 修正：スクロール機能を復活 */
+            min-height: 100vh;
+            height: auto;
+            overflow-y: auto; 
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* 上詰め配置に変更（スクロール対応） */
             user-select: none;
             touch-action: manipulation;
+            padding: 10px 0; /* 上下の余裕 */
         }
 
         .container {
             display: flex;
             width: 96%;
-            height: 96%; /* 画面いっぱい使う */
+            /* 修正：中身に合わせて高さを伸ばす */
+            height: auto; 
+            min-height: 90vh; /* 最低でも画面の9割は使う */
             gap: 10px;
             max-width: 1200px;
             align-items: stretch; 
         }
 
         .left-panel {
-            flex: 1.4; /* 履歴エリアを広めに */
+            flex: 1.4;
             border: 2px solid #555;
             border-radius: 8px;
             padding: 8px;
             display: flex;
             flex-direction: column;
             background-color: #222;
-            min-height: 0;
+            height: auto;
         }
 
         .panel-title {
@@ -62,17 +66,15 @@
 
         .history-grid {
             display: grid;
-            /* 変更：横9列にする（72 ÷ 9 = 縦8行） */
+            /* 横9列 × 縦8行 */
             grid-template-columns: repeat(9, 1fr);
-            grid-template-rows: repeat(8, 1fr); /* 縦も均等割り付け */
+            /* 修正：高さ固定ではなく中身なりに並べる */
             gap: 3px;
-            flex: 1; /* 親要素いっぱいに広げる */
-            overflow: hidden; /* はみ出し防止 */
-            align-content: stretch; /* 縦方向にも引き伸ばして配置 */
+            padding-bottom: 5px;
         }
 
         .history-item {
-            /* aspect-ratioは削除し、グリッドのマス目に合わせる */
+            aspect-ratio: 1; /* 正円を保つ */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -80,27 +82,15 @@
             background-color: var(--history-bg);
             color: #777;
             font-weight: bold;
-            /* 文字サイズを小さく調整 */
             font-size: clamp(0.6rem, 1.2vw, 0.9rem); 
             line-height: 1;
             transition: all 0.3s;
-            /* 楕円にならないよう、width/heightの小さい方に合わせる工夫が必要だが
-               グリッドで制御するためここではシンプルに */
-            width: 100%;
-            height: 100%;
-        }
-
-        /* 擬似的に正円に近づけるためのハック（数字が見えればOKなら不要だが念のため） */
-        .history-item::before {
-            content: "";
-            display: inline-block;
-            vertical-align: middle;
         }
 
         .history-item.hit {
             background-color: var(--active-num-bg);
             color: white;
-            transform: scale(1.05); /* 拡大率を少し控えめに */
+            transform: scale(1.05);
             border: 1px solid #fff;
             z-index: 1;
         }
@@ -117,11 +107,11 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-height: 0;
+            /* ボタンを下に配置 */
+            justify-content: space-between;
         }
 
         .current-number-box {
-            /* 変更：高さを抑える */
             flex: 1;
             border: 2px solid #555;
             border-radius: 8px;
@@ -132,11 +122,11 @@
             background-color: #222;
             position: relative;
             padding: 5px;
-            min-height: 0;
+            /* 数字がつぶれないように最低限の高さを確保 */
+            min-height: 150px; 
         }
 
         #current-number-display {
-            /* 画面サイズに合わせて自動調整 */
             font-size: 18vh; 
             font-weight: bold;
             color: var(--accent-color);
@@ -158,10 +148,11 @@
         }
 
         .controls {
-            /* ボタンエリアの高さは固定せず中身に合わせる */
             flex-shrink: 0; 
             display: flex;
             gap: 10px;
+            align-items: flex-end;
+            margin-top: auto;
         }
 
         button {
@@ -212,18 +203,30 @@
         /* レスポンシブ調整 */
         /* -------------------------------------- */
 
-        /* スマホ縦画面（予備） */
+        /* スマホ縦画面 */
         @media (max-width: 768px) and (orientation: portrait) {
             .container { flex-direction: column-reverse; }
             .history-grid { grid-template-columns: repeat(9, 1fr); }
             #current-number-display { font-size: 10vh; }
+            .right-panel { min-height: 250px; }
         }
 
-        /* スマホ横画面（メイン） - 1画面収め用チューニング */
+        /* スマホ横画面（メイン） */
         @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                /* スクロール可能にする設定 */
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                padding-top: 5px;
+                padding-bottom: 20px;
+                align-items: flex-start;
+            }
+
             .container {
                 width: 98%;
-                height: 96%;
+                height: auto; /* コンテンツに合わせて伸びる */
+                min-height: 90vh;
                 gap: 8px;
             }
             
@@ -231,25 +234,32 @@
                 padding: 4px;
             }
             
-            /* グリッドの間隔をさらに詰める */
+            /* グリッド */
             .history-grid {
+                /* 9列維持 */
+                grid-template-columns: repeat(9, 1fr);
                 gap: 2px;
+                /* 高さ制限を解除 */
+                overflow: visible; 
             }
-            /* フォント微調整 */
             .history-item {
                 font-size: 0.8rem; 
             }
 
             .right-panel {
                 gap: 8px;
+                justify-content: space-between;
             }
 
-            /* 右側の数字を少し小さくして圧迫感を減らす */
+            /* 右側の数字 */
+            .current-number-box {
+                flex: 1;
+                min-height: 140px; /* 小さくなりすぎないよう確保 */
+            }
             #current-number-display {
-                font-size: 25vh; /* 前回の25vhよりは控えめにしつつ大きく */
+                font-size: 22vh; 
             }
             
-            /* ボタンを少しスリムに */
             button {
                 font-size: 1rem;
                 padding: 10px 0;
@@ -280,7 +290,6 @@
     </div>
 
     <script>
-        // 数字設定：1〜72
         const MAX_NUMBER = 72;
         const SPECIAL_COUNT = 3;
         const SHUFFLE_DURATION = 3000; 
