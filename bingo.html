@@ -13,7 +13,6 @@
             --btn-next-bg: #4CAF50;
             --btn-reset-bg: #f44336;
             --history-bg: #333;
-            /* 変数は残しますが、下のクラス指定(.hitなど)が優先されます */
             --active-num-bg: #6fcaff; 
         }
 
@@ -22,13 +21,13 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            /* 画面全体をスクロール可能にする */
+            /* スクロールは可能にしつつ、基本はコンパクトに収める */
             min-height: 100vh;
             height: auto;
             overflow-y: auto; 
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: center; /* 中央揃え */
             user-select: none;
             touch-action: manipulation;
             padding: 10px 0;
@@ -37,8 +36,10 @@
         .container {
             display: flex;
             width: 96%;
+            /* 高さの最小値を下げてコンパクトに */
             height: auto; 
-            min-height: 70vh;
+            /* 変更：縦の長さを短くするために最小高さを減らしました */
+            min-height: 60vh; 
             gap: 10px;
             max-width: 1200px;
             align-items: stretch; 
@@ -70,7 +71,7 @@
             grid-template-columns: repeat(12, 1fr);
             gap: 3px;
             padding-bottom: 0;
-            align-content: center; 
+            align-content: center; /* 縦方向中央寄せ */
             height: 100%;
         }
 
@@ -83,8 +84,8 @@
             background-color: var(--history-bg);
             color: #777;
             font-weight: bold;
-            /* デフォルトの文字サイズ */
-            font-size: 1rem; 
+            /* 通常時は12列に収まるよう小さめに設定 */
+            font-size: clamp(0.5rem, 1.1vw, 0.8rem); 
             line-height: 1;
             transition: all 0.3s;
         }
@@ -124,7 +125,8 @@
             background-color: #222;
             position: relative;
             padding: 5px;
-            min-height: 120px; 
+            /* 縦幅を少し詰める */
+            min-height: 100px; 
         }
 
         #current-number-display {
@@ -212,44 +214,41 @@
             .right-panel { min-height: 250px; }
         }
 
-        /* ★修正箇所★
-           スマホ横画面（かなり広めに条件を取って適用漏れを防ぎます）
-           - 横向きなら、画面幅が1024px以下（タブレット含む）はすべてこの設定にします
-        */
+        /* スマホ横画面（文字特大設定） */
         @media (orientation: landscape) and (max-width: 1024px) {
             body {
                 align-items: flex-start;
-                padding-top: 10px;
+                padding-top: 5px; /* 上余白を少し減らす */
             }
 
             .container {
                 width: 98%;
                 height: auto; 
-                min-height: 100vh;
+                min-height: 60vh; /* 縦の長さを抑える */
                 gap: 8px;
             }
             
             .left-panel {
                 padding: 4px;
-                flex: 3; /* 文字が大きいのでエリアを広げる */
+                flex: 3;
             }
             
             .history-grid {
                 /* 12列 × 6行 */
                 grid-template-columns: repeat(12, 1fr);
                 gap: 2px;
-                /* コンテンツに合わせて高さを伸ばす */
                 align-content: start;
             }
 
-            /* ここで文字サイズを強制的に大きくします */
+            /* ★ご要望の変更箇所★ */
             .history-item {
-                font-size: 2.2rem !important; /* 強制適用 */
+                /* 文字を少し小さく: 2.5rem -> 2.0rem */
+                font-size: 2.0rem !important; 
                 
-                /* 文字に合わせて枠も大きく */
-                width: 100%;  /* グリッド幅いっぱい */
-                height: auto; /* 高さは自動 */
-                aspect-ratio: 1; /* 正円を維持 */
+                /* 丸のサイズも少し小さく: 3.5rem -> 3rem */
+                width: 3rem; 
+                height: 3rem;
+                flex-shrink: 0;
             }
 
             .right-panel {
@@ -259,10 +258,10 @@
 
             .current-number-box {
                 flex: 1;
-                min-height: 100px; 
+                min-height: 90px; /* 少し高さを減らす */
             }
             #current-number-display {
-                font-size: 15vh; 
+                font-size: 14vh; 
             }
             
             button {
