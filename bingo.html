@@ -86,13 +86,13 @@
             color: #777;
             font-weight: bold;
             /* 12列だと狭くなるので文字サイズを調整 */
-            font-size: clamp(0.5rem, 1.1vw, 0.8rem); 
+            font-size: clamp(0.5rem, 1.8vw, 2rem); 
             line-height: 1;
             transition: all 0.3s;
         }
 
         .history-item.hit {
-            background-color: var(--active-num-bg);
+            background-color: #006064;
             color: white;
             transform: scale(1.05);
             border: 1px solid #fff;
@@ -100,7 +100,7 @@
         }
         
         .history-item.special-hit {
-            background-color: #f5b1ee;
+            background-color: #C2185B;
             box-shadow: 0 0 8px #ff4081;
             animation: glow 1s infinite alternate;
             z-index: 2;
