@@ -36,9 +36,7 @@
         .container {
             display: flex;
             width: 96%;
-            /* 高さの最小値を下げてコンパクトに */
             height: auto; 
-            /* 変更：縦の長さを短くするために最小高さを減らしました */
             min-height: 60vh; 
             gap: 10px;
             max-width: 1200px;
@@ -125,7 +123,6 @@
             background-color: #222;
             position: relative;
             padding: 5px;
-            /* 縦幅を少し詰める */
             min-height: 100px; 
         }
 
@@ -218,13 +215,13 @@
         @media (orientation: landscape) and (max-width: 1024px) {
             body {
                 align-items: flex-start;
-                padding-top: 5px; /* 上余白を少し減らす */
+                padding-top: 5px;
             }
 
             .container {
                 width: 98%;
                 height: auto; 
-                min-height: 60vh; /* 縦の長さを抑える */
+                min-height: 60vh; 
                 gap: 8px;
             }
             
@@ -242,12 +239,12 @@
 
             /* ★ご要望の変更箇所★ */
             .history-item {
-                /* 文字を少し小さく: 2.5rem -> 2.0rem */
-                font-size: 2.0rem !important; 
+                /* 文字サイズ: 2.4rem */
+                font-size: 2.4rem !important; 
                 
-                /* 丸のサイズも少し小さく: 3.5rem -> 3rem */
-                width: 3rem; 
-                height: 3rem;
+                /* 丸のサイズ: 3.4rem */
+                width: 3.4rem; 
+                height: 3.4rem;
                 flex-shrink: 0;
             }
 
@@ -258,7 +255,7 @@
 
             .current-number-box {
                 flex: 1;
-                min-height: 90px; /* 少し高さを減らす */
+                min-height: 90px;
             }
             #current-number-display {
                 font-size: 14vh; 
