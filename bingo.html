@@ -13,6 +13,7 @@
             --btn-next-bg: #4CAF50;
             --btn-reset-bg: #f44336;
             --history-bg: #333;
+            /* 変数は残しますが、下のクラス指定(.hitなど)が優先されます */
             --active-num-bg: #6fcaff; 
         }
 
@@ -21,13 +22,13 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             margin: 0;
-            /* スクロールは可能にしつつ、基本はコンパクトに収める */
+            /* 画面全体をスクロール可能にする */
             min-height: 100vh;
             height: auto;
             overflow-y: auto; 
             display: flex;
             justify-content: center;
-            align-items: center; /* 中央揃えに戻しました（コンパクトなため） */
+            align-items: center;
             user-select: none;
             touch-action: manipulation;
             padding: 10px 0;
@@ -36,16 +37,14 @@
         .container {
             display: flex;
             width: 96%;
-            /* 修正：高さの最小値を下げてコンパクトに */
             height: auto; 
-            min-height: 70vh; /* 以前より小さく */
+            min-height: 70vh;
             gap: 10px;
             max-width: 1200px;
             align-items: stretch; 
         }
 
         .left-panel {
-            /* 横12列になるので、左パネルの幅比率を上げます */
             flex: 2; 
             border: 2px solid #555;
             border-radius: 8px;
@@ -67,12 +66,11 @@
 
         .history-grid {
             display: grid;
-            /* 変更：横12列 × 縦6行 */
+            /* 横12列 × 縦6行 */
             grid-template-columns: repeat(12, 1fr);
             gap: 3px;
-            /* 行数が減ったので、下余白などを調整 */
             padding-bottom: 0;
-            align-content: center; /* 縦方向中央寄せ */
+            align-content: center; 
             height: 100%;
         }
 
@@ -85,14 +83,15 @@
             background-color: var(--history-bg);
             color: #777;
             font-weight: bold;
-            /* 12列だと狭くなるので文字サイズを調整 */
-            font-size: clamp(1.8rem, 3vw, 2rem); 
+            /* デフォルトの文字サイズ */
+            font-size: 1rem; 
             line-height: 1;
             transition: all 0.3s;
         }
 
+        /* ユーザー様ご指定の色設定 */
         .history-item.hit {
-            background-color: #006064;
+            background-color: #006064; /* 濃い緑 */
             color: white;
             transform: scale(1.05);
             border: 1px solid #fff;
@@ -100,14 +99,13 @@
         }
         
         .history-item.special-hit {
-            background-color: #C2185B;
+            background-color: #C2185B; /* 濃いピンク */
             box-shadow: 0 0 8px #ff4081;
             animation: glow 1s infinite alternate;
             z-index: 2;
         }
 
         .right-panel {
-            /* 左が広くなった分、右の比率を調整 */
             flex: 0.8;
             display: flex;
             flex-direction: column;
@@ -126,12 +124,11 @@
             background-color: #222;
             position: relative;
             padding: 5px;
-            /* 縦6行に合わせて高さもコンパクトに */
             min-height: 120px; 
         }
 
         #current-number-display {
-            font-size: 15vh; /* 少し控えめに */
+            font-size: 15vh;
             font-weight: bold;
             color: var(--accent-color);
             line-height: 1;
@@ -210,40 +207,49 @@
         /* スマホ縦画面 */
         @media (max-width: 768px) and (orientation: portrait) {
             .container { flex-direction: column-reverse; }
-            /* 縦画面で12列は厳しいため、ここだけ8列などに逃がすのが一般的ですが
-               ご要望を優先し可能な限り詰め込みます（文字は小さくなります） */
             .history-grid { grid-template-columns: repeat(9, 1fr); } 
             #current-number-display { font-size: 10vh; }
             .right-panel { min-height: 250px; }
         }
 
-        /* スマホ横画面（メイン） */
-        @media (max-height: 600px) and (orientation: landscape) {
+        /* ★修正箇所★
+           スマホ横画面（かなり広めに条件を取って適用漏れを防ぎます）
+           - 横向きなら、画面幅が1024px以下（タブレット含む）はすべてこの設定にします
+        */
+        @media (orientation: landscape) and (max-width: 1024px) {
             body {
-                align-items: center; /* 上下に余裕がある場合は中央寄せ */
+                align-items: flex-start;
+                padding-top: 10px;
             }
 
             .container {
                 width: 98%;
-                /* 枠を小さくするため、高さを制限 */
                 height: auto; 
-                min-height: 60vh; /* 70vh -> 60vh へ縮小 */
+                min-height: 100vh;
                 gap: 8px;
             }
             
             .left-panel {
                 padding: 4px;
-                /* 幅を確保 */
-                flex: 2.2; 
+                flex: 3; /* 文字が大きいのでエリアを広げる */
             }
             
             .history-grid {
                 /* 12列 × 6行 */
                 grid-template-columns: repeat(12, 1fr);
                 gap: 2px;
+                /* コンテンツに合わせて高さを伸ばす */
+                align-content: start;
             }
+
+            /* ここで文字サイズを強制的に大きくします */
             .history-item {
-                font-size: 0.75rem; 
+                font-size: 2.2rem !important; /* 強制適用 */
+                
+                /* 文字に合わせて枠も大きく */
+                width: 100%;  /* グリッド幅いっぱい */
+                height: auto; /* 高さは自動 */
+                aspect-ratio: 1; /* 正円を維持 */
             }
 
             .right-panel {
@@ -253,16 +259,15 @@
 
             .current-number-box {
                 flex: 1;
-                /* 履歴（6行）の高さとバランスを取る */
                 min-height: 100px; 
             }
             #current-number-display {
-                font-size: 20vh; 
+                font-size: 15vh; 
             }
             
             button {
                 font-size: 1rem;
-                padding: 8px 0;
+                padding: 10px 0;
             }
         }
     </style>
